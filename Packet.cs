@@ -40,7 +40,11 @@ namespace Yoyo
         //public Buffer Buffer = new Buffer(DataSize);
 
         /// <summary> Create a new empty packet </summary>
-        public Packet() { }
+        public Packet()
+        {
+            _buffer = new List<byte>();
+            _index = 0;
+        }
 
         public Packet(uint id)
         {
@@ -388,6 +392,11 @@ namespace Yoyo
         #endregion
 
         #endregion
+
+        //public override string ToString()
+        //{
+        //    return _buffer;
+        //}
 
         #region Disposable
 

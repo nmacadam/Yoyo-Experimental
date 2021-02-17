@@ -6,6 +6,7 @@ namespace Yoyo
 {
     public class TcpMessenger
     {
+        private IInbox _inbox;
         private TcpClient _socket;
 
         private NetworkStream _networkStream;
@@ -19,13 +20,15 @@ namespace Yoyo
 
         public bool IsActive => _socket != null;
 
-        public TcpMessenger()
+        public TcpMessenger(IInbox inbox)
         {
+            _inbox = inbox;
             _receiveBuffer = new byte[_bufferSize];
         }
 
-        public TcpMessenger(int id)
+        public TcpMessenger(IInbox inbox, int id)
         {
+            _inbox = inbox;
             _id = id;
             _receiveBuffer = new byte[_bufferSize];
         }
@@ -57,6 +60,8 @@ namespace Yoyo
             _socket.ReceiveBufferSize = _bufferSize;
             _socket.SendBufferSize = _bufferSize;
             _networkStream = _socket.GetStream();
+
+            _receivedPacket = new Packet();
 
             // begin reading from stream
             _networkStream.BeginRead(_receiveBuffer, 0, _bufferSize, ReceiveCallback, null);
@@ -112,7 +117,7 @@ namespace Yoyo
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            try
+            //try
             {
                 int receivedSize = _networkStream.EndRead(ar);
                 if (receivedSize <= 0)
@@ -127,14 +132,26 @@ namespace Yoyo
                 Console.WriteLine("client | received packet...");
 
                 // handle received data
+                // lets just assume its exactly one packet for now
+                _receivedPacket.Reset();
+                _receivedPacket = new Packet(buffer);
+
+                int length = _receivedPacket.ReadInt();
+                Console.WriteLine("client | packet length: " + length);
+
+                int packetId = _receivedPacket.ReadInt();
+                Console.WriteLine("client | packet id: " + (ServerPacketType)packetId);
+
+                _inbox.Respond((uint)packetId, _receivedPacket);
+
                 //_receivedPacket.Reset(HandleData(buffer));
 
                 // start reading again
                 _networkStream.BeginRead(_receiveBuffer, 0, _bufferSize, ReceiveCallback, null);
             }
-            catch (Exception e)
+            //catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                //Console.WriteLine(e.Message);
                 // disconnect
             }
         }

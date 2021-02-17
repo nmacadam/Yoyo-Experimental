@@ -8,14 +8,29 @@ namespace Yoyo
         void Respond(uint type, Packet packet);
     }
 
+    public interface IClientInbox : IInbox
+    {
+        void Respond(ServerPacketType type, Packet packet);
+        void OnWelcome(Packet packet);
+    }
+
+    public interface IServerInbox : IInbox
+    {
+        void Respond(ClientPacketType type, Packet packet);
+        void OnReceivedWelcome(Packet packet);
+    }
+
+
     public class ClientInbox : IInbox
     {
-        private Client _client;
+        private IClientInfo _client;
+        private ClientOutbox _outbox;
         private Dictionary<ServerPacketType, Action<Packet>> _responses;
 
-        public ClientInbox(Client client)
+        public ClientInbox(IClientInfo client, ClientOutbox outbox)
         {
             _client = client;
+            _outbox = outbox;
             _responses = new Dictionary<ServerPacketType, Action<Packet>>()
             {
                 { ServerPacketType.Data,    delegate {} },
@@ -41,9 +56,40 @@ namespace Yoyo
             Console.WriteLine($"client | recieved hello: { message }");
 
             // set client id
-
+            _client.Id = id;
 
             // send hello ack
+            //_outbox.SendWelcomeReceived("Hello server! I am client #" + _client.Id);
+        }
+    }
+
+    public class ClientOutbox
+    {
+        private TcpMessenger _client;
+
+        public ClientOutbox(TcpMessenger client)
+        {
+            _client = client;
+        }
+
+        private void Send(Packet packet)
+        {
+            packet.WriteLength();
+            _client.Send(packet);
+            //_server.GetClientInfo(toClient).Messenger.Send(packet);
+        }
+
+        public void SendWelcomeReceived(string message)
+        {
+            Console.WriteLine("client | sending server hello ack packet...");
+
+            using (Packet packet = new Packet((uint)ClientPacketType.HelloReceived))
+            {
+                packet.Write(message);
+                //packet.Write(toClient);
+
+                Send(packet);
+            }
         }
     }
 

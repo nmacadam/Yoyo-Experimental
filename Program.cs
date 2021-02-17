@@ -8,22 +8,40 @@ using System.Threading.Tasks;
 
 namespace Yoyo
 {
-    public class Client
+    public class Client : IClientInfo
     {
         private TcpMessenger _messenger;
 
         private ClientInbox _inbox;
+        private ClientOutbox _outbox;
 
         private IPAddress _address;
         private int _port;
 
-        public ClientInbox Inbox => _inbox;
+        private int _id = -1;
+
+        public IInbox Inbox => _inbox;
+
+        public int Id
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                Console.WriteLine($"client | recieved id: { value }");
+                _id = value;
+            }
+        }
 
         public Client(IPAddress address, int port)
         {
-            _inbox = new ClientInbox(this);
+            // not gonna work in this order :(
+            _inbox = new ClientInbox(this, _outbox);
+            _outbox = new ClientOutbox(_messenger);
 
-            _messenger = new TcpMessenger();
+            _messenger = new TcpMessenger(_inbox);
             _address = address;
             _port = port;
         }
