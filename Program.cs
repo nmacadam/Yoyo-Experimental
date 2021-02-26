@@ -10,17 +10,18 @@ namespace Yoyo
 {
     public class Client : IClientInfo
     {
-        private TcpMessenger _messenger;
+        private ClientMessenger _messenger;
+        //private TcpMessenger _messenger;
 
-        private ClientInbox _inbox;
-        private ClientOutbox _outbox;
+        //private ClientInbox _inbox;
+        //private ClientOutbox _outbox;
 
         private IPAddress _address;
         private int _port;
 
         private int _id = -1;
 
-        public IInbox Inbox => _inbox;
+        //public IInbox Inbox => _inbox;
 
         public int Id
         {
@@ -38,10 +39,12 @@ namespace Yoyo
         public Client(IPAddress address, int port)
         {
             // not gonna work in this order :(
-            _inbox = new ClientInbox(this, _outbox);
-            _outbox = new ClientOutbox(_messenger);
+            _messenger = new ClientMessenger(this);
 
-            _messenger = new TcpMessenger(_inbox);
+            //_inbox = new ClientInbox(this, _outbox);
+            //_messenger = new TcpMessenger(_inbox);
+            //_outbox = new ClientOutbox(_messenger);
+
             _address = address;
             _port = port;
         }
@@ -49,7 +52,8 @@ namespace Yoyo
         public void Connect()
         {
             Console.WriteLine($"client | connecting to {_address}:{_port}...");
-            _messenger.ConnectTo(_address, _port);
+            //_messenger.Connection.ConnectTo(_address, _port);
+            _messenger.Connect(_address, _port);
 
             // send hello packet
         }
@@ -109,10 +113,10 @@ namespace Yoyo
             // Find an open slot and connect it
             for (int i = 1; i <= _maxPlayers; i++)
             {
-                if (!_clients[i].Messenger.IsActive)
+                if (!_clients[i].Messenger.Connection.IsActive)
                 {
                     Console.WriteLine($"server | client at {client.Client.RemoteEndPoint} successfully connected!");
-                    _clients[i].Messenger.ReadFrom(this, client);
+                    _clients[i].Messenger.Connection.ReadFrom(this, client);
                     return;
                 }
             }
@@ -137,12 +141,7 @@ namespace Yoyo
 
         public static void ClientThread()
         {
-            //IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            //IPAddress ipAddress = ipHostInfo.AddressList[0];
-            //IPEndPoint remoteEndPoint = new IPEndPoint(ipAddress, 11000);
-
             Client c1 = new Client(IPAddress.Parse("127.0.0.1"), 11000);
-            //Client c1 = new Client(ipAddress, 11000);
             c1.Connect();
         }
 

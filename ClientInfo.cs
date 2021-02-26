@@ -1,30 +1,44 @@
 ﻿namespace Yoyo
 {
+    public interface IClient
+    {
+        ClientMessenger Messenger { get; }
+        IClientInfo Info { get; }
+    }
+
     public interface IClientInfo
     {
-        IInbox Inbox { get;  }
+        //IInbox Inbox { get;  }
         int Id { get; set; }
     }
 
     /// <summary>
     /// Server-side client representation
     /// </summary>
-    public class ClientInfo : IClientInfo
+    public class ClientInfo : IClient, IClientInfo
     {
-        private ClientInbox _inbox;
+        private ClientMessenger _messenger;
+        //private ClientInbox _inbox;
 
         public int Id { get; set; }
 
-        public IInbox Inbox => _inbox;
+        public ClientMessenger Messenger => _messenger;
 
-        public readonly TcpMessenger Messenger;
+        public IClientInfo Info => this;
+
+        //public IInbox Inbox => _inbox;
+
+        //public readonly TcpMessenger Messenger;
 
         public ClientInfo(int id)
         {
-            _inbox = new ClientInbox(this, new ClientOutbox(Messenger));
             Id = id;
-            Messenger = new TcpMessenger(Inbox, Id);
+            _messenger = new ClientMessenger(this);
+            //ClientOutbox outbox = null;
+            //_inbox = new ClientInbox(this, outbox);
+            //Id = id;
+            //Messenger = new TcpMessenger(Inbox, Id);
+            //outbox = new ClientOutbox(Messenger);
         }
-
     }
 }

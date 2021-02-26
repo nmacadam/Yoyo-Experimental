@@ -145,6 +145,7 @@ namespace Yoyo
                 _inbox.Respond((uint)packetId, _receivedPacket);
 
                 //_receivedPacket.Reset(HandleData(buffer));
+                _receivedPacket.Reset();
 
                 // start reading again
                 _networkStream.BeginRead(_receiveBuffer, 0, _bufferSize, ReceiveCallback, null);

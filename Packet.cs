@@ -10,7 +10,7 @@ namespace Yoyo
     public enum ServerPacketType
     {
         Data = 0x0,
-        Hello = 0x1
+        Hello = 0x2
     }
 
     /// <summary>
