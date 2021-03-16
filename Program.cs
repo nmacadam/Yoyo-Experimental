@@ -1,20 +1,11 @@
 using System;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace Yoyo
 {
     public class Client
     {
-        public class ClientState
-        {
-            public Socket WorkSocket = null;
-            public const int BufferSize = 4096;
-            public byte[] ReceiveBuffer = new byte[BufferSize];
-        }
-
         private IPAddress _ip;
         private int _port;
 
